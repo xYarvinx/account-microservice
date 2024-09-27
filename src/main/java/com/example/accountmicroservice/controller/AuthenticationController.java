@@ -1,12 +1,11 @@
 package com.example.accountmicroservice.controller;
 
 import com.example.accountmicroservice.dto.SignUpRequest;
-import com.example.accountmicroservice.models.UserEntity;
 import com.example.accountmicroservice.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
+
     @PostMapping("/SignUp")
     public ResponseEntity register(@RequestBody SignUpRequest request) {
         try {
@@ -23,4 +23,5 @@ public class AuthenticationController {
         }
         return ResponseEntity.status(HttpStatus.OK).body("Вы успешно зарегестрировались!");
     }
+
 }

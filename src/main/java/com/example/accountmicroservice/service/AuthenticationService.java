@@ -8,15 +8,13 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-    private final PasswordEncoder passwordEncoder;
     private final UserService userService;
-
+    private final PasswordEncoder passwordEncoder;
 
     public void signUp(SignUpRequest request) {
         if(userService.getByUsername(request.getUsername()).isPresent()){
             throw new RuntimeException("Такой пользователь уже существует");
         }
-
-
+        userService.createUser(request);
     }
 }
