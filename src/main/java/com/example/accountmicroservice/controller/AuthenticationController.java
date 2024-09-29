@@ -1,5 +1,7 @@
 package com.example.accountmicroservice.controller;
 
+import com.example.accountmicroservice.dto.JwtResponse;
+import com.example.accountmicroservice.dto.SignInRequest;
 import com.example.accountmicroservice.dto.SignUpRequest;
 import com.example.accountmicroservice.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
@@ -15,13 +17,31 @@ public class AuthenticationController {
     private final AuthenticationService authenticationService;
 
     @PostMapping("/SignUp")
-    public ResponseEntity register(@RequestBody SignUpRequest request) {
+    public ResponseEntity<?> register(@RequestBody SignUpRequest request) {
         try {
             authenticationService.signUp(request);
-        } catch (Exception e){
-            return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.OK).body("Вы успешно зарегестрировались!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.OK).body("Вы успешно зарегестрировались!");
+    }
+
+    @PostMapping("/SignIn")
+    public ResponseEntity<?> login(@RequestBody SignInRequest request) {
+        try {
+            JwtResponse tokens = authenticationService.signIn(request);
+            return ResponseEntity.status(HttpStatus.OK).body(tokens);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/SignOut")
+    public ResponseEntity<?> logout(){
+        authenticationService.signOut();
+       return  ResponseEntity.status(HttpStatus.OK).body("Вы успешно, вышли из акаунта");
     }
 
 }
