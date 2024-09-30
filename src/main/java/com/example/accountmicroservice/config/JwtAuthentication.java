@@ -52,6 +52,5 @@ public class JwtAuthentication implements Authentication {
     public String getName() {
         return firstName;
     }
-
 }
 

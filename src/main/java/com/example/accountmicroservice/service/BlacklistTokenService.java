@@ -8,7 +8,7 @@ import java.time.Duration;
 
 @Service
 @AllArgsConstructor
-public class TokenBlacklistService {
+public class BlacklistTokenService {
     private final RedisTemplate<String, String> redisTemplate;
 
     public void addToBlacklist(String token, long expirationDuration) {
