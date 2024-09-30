@@ -27,7 +27,7 @@ public class AuthenticationService {
 
     public void signUp(SignUpRequest request) {
         if(userService.getByUsername(request.getUsername()).isPresent()){
-            throw new RuntimeException("Такой пользователь уже существует");
+            throw new RuntimeException("{\"error\": \"Такой пользователь уже существует\"}");
         }
         userService.createUser(request);
     }
@@ -36,7 +36,7 @@ public class AuthenticationService {
     public JwtResponse signIn(SignInRequest request) {
         Optional<UserEntity> user = Optional.ofNullable(userService
                     .getByUsername(request.getUsername())
-                    .orElseThrow(() -> new RuntimeException("Пользователь не найден")));
+                    .orElseThrow(() -> new RuntimeException("{\"error\": \"Пользователь не найден\"}")));
 
         if( user.isPresent() && passwordEncoder.matches(request.getPassword(), user.get().getPassword())){
             final String accessToken = tokenProvider.generateAccessToken(user);
@@ -49,7 +49,7 @@ public class AuthenticationService {
 
             return new JwtResponse(accessToken, refreshToken);
         } else {
-            throw new RuntimeException("Неверный логин или пароль");
+            throw new RuntimeException("{\"error\": \"Неверный логин или пароль\"}");
         }
     }
 

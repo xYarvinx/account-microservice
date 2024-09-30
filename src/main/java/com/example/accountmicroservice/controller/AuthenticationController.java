@@ -22,7 +22,7 @@ public class AuthenticationController {
     public ResponseEntity<?> register(@RequestBody SignUpRequest request) {
         try {
             authenticationService.signUp(request);
-            return ResponseEntity.status(HttpStatus.OK).body("Вы успешно зарегестрировались!");
+            return ResponseEntity.status(HttpStatus.OK).body("{\"message\": \"Вы успешно зарегестрировались!\"}");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -42,12 +42,8 @@ public class AuthenticationController {
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/SignOut")
     public ResponseEntity<?> logout(HttpServletRequest request){
-        try {
-            authenticationService.signOut(request);
-            return  ResponseEntity.status(HttpStatus.OK).body("Вы успешно, вышли из акаунта");
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+        authenticationService.signOut(request);
+        return  ResponseEntity.status(HttpStatus.OK).body("{\"message\": \"Вы успешно вышли из аккаунта!\"}");
     }
 
 }
