@@ -33,14 +33,14 @@ public class JwtFilter extends GenericFilterBean {
             if (!tokenProvider.validateToken(token)) {
                 ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\": \"Неверный токен JWT\"}");
+                response.getWriter().write("{\"error\": \"Invalid JWT token\"}");
                 return;
             }
             if (blacklistTokenService.isBlacklisted(token)) {
 
                 ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\": \"Токен был отозван\"}");
+                response.getWriter().write("{\"error\": \"Token has been revoked\"}");
                 return;
             }
             final Claims claims = tokenProvider.getClaims(token);
