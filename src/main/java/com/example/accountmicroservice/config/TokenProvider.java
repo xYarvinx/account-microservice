@@ -43,7 +43,7 @@ public class TokenProvider {
                 .setExpiration(accessExpiration)
                 .signWith(JWT_SECRET)
                 .claim("roles", user.get().getRoles())
-                .claim("username", user.get().getUsername())
+                .claim("firstname", user.get().getFirstName())
                 .compact();
     }
 
