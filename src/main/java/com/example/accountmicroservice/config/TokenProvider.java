@@ -79,4 +79,14 @@ public class TokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+    public Date getExpirationDateFromToken(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(JWT_SECRET)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getExpiration();
+    }
 }

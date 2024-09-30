@@ -4,10 +4,12 @@ import com.example.accountmicroservice.dto.JwtResponse;
 import com.example.accountmicroservice.dto.SignInRequest;
 import com.example.accountmicroservice.dto.SignUpRequest;
 import com.example.accountmicroservice.service.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,7 +22,7 @@ public class AuthenticationController {
     public ResponseEntity<?> register(@RequestBody SignUpRequest request) {
         try {
             authenticationService.signUp(request);
-            return ResponseEntity.status(HttpStatus.OK).body("Вы успешно зарегестрировались!");
+            return ResponseEntity.status(HttpStatus.OK).body("{\"message\": \"Вы успешно зарегестрировались!\"}");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
@@ -39,9 +41,9 @@ public class AuthenticationController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/SignOut")
-    public ResponseEntity<?> logout(){
-        authenticationService.signOut();
-       return  ResponseEntity.status(HttpStatus.OK).body("Вы успешно, вышли из акаунта");
+    public ResponseEntity<?> logout(HttpServletRequest request){
+        authenticationService.signOut(request);
+        return  ResponseEntity.status(HttpStatus.OK).body("{\"message\": \"Вы успешно вышли из аккаунта!\"}");
     }
 
 }
