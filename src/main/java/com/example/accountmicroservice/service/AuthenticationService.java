@@ -66,6 +66,13 @@ public class AuthenticationService {
         refreshTokenService.deleteRefreshToken(jwtAuthentication.getUsername());
     }
 
+    public Boolean validate(String accessToken) {
+        if(blacklistTokenService.isBlacklisted(accessToken)){
+            return false;
+        }
+        return tokenProvider.validateToken(accessToken);
+    }
+
 
     private String extractToken(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
@@ -73,5 +80,30 @@ public class AuthenticationService {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+
+    public JwtResponse refresh(String refreshToken) {
+        if(!tokenProvider.validateToken(refreshToken)){
+            throw new RuntimeException("{\"error\": \"Неверный токен обновления\"}");
+        }
+
+        String username = tokenProvider.getClaims(refreshToken).getSubject();
+        if(!refreshTokenService.getRefreshToken(username).equals(refreshToken)){
+            throw new RuntimeException("{\"error\": \"Неверный токен обновления\"}");
+        }
+
+        Optional<UserEntity> user = userService.getByUsername(username);
+        if(user.isEmpty()){
+            throw new RuntimeException("{\"error\": \"Пользователь не найден\"}");
+        }
+
+        final String newAccessToken = tokenProvider.generateAccessToken(user);
+        final String newRefreshToken = tokenProvider.generateRefreshToken(user);
+
+        refreshTokenService.deleteRefreshToken(username);
+        refreshTokenService.saveRefreshToken(username, newRefreshToken);
+
+        return new JwtResponse(newAccessToken, newRefreshToken);
     }
 }
