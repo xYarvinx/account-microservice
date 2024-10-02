@@ -1,9 +1,10 @@
 package com.example.accountmicroservice.config;
 
-import com.example.accountmicroservice.models.UserEntity;
+import com.example.accountmicroservice.models.AccountEntity;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -34,25 +35,25 @@ public class TokenProvider {
     }
 
 
-    public String generateAccessToken(Optional<UserEntity> user) {
+    public String generateAccessToken(Optional<AccountEntity> account) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant accessExpirationInstant = now.plus(Duration.ofMillis(ACCESS_TOKEN_EXPIRATION)).atZone(ZoneId.systemDefault()).toInstant();
         final Date accessExpiration = Date.from(accessExpirationInstant);
         return Jwts.builder()
-                .setSubject(user.get().getUsername())
+                .setSubject(account.get().getUsername())
                 .setExpiration(accessExpiration)
                 .signWith(JWT_SECRET)
-                .claim("roles", user.get().getRoles())
-                .claim("firstname", user.get().getFirstName())
+                .claim("roles", account.get().getRoles())
+                .claim("firstname", account.get().getFirstName())
                 .compact();
     }
 
-    public String generateRefreshToken(@NonNull Optional<UserEntity> user) {
+    public String generateRefreshToken(@NonNull Optional<AccountEntity> account) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant refreshExpirationInstant = now.plus(Duration.ofMillis(REFRESH_TOKEN_EXPIRATION)).atZone(ZoneId.systemDefault()).toInstant();
         final Date refreshExpiration = Date.from(refreshExpirationInstant);
         return Jwts.builder()
-                .setSubject(user.get().getUsername())
+                .setSubject(account.get().getUsername())
                 .setExpiration(refreshExpiration)
                 .signWith(JWT_SECRET)
                 .compact();
@@ -88,5 +89,12 @@ public class TokenProvider {
                 .getBody();
 
         return claims.getExpiration();
+    }
+    public String extractToken(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 }
