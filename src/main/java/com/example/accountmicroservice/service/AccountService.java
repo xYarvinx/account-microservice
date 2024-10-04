@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 public class AccountService {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
-    private final TokenProvider tokenProvider;
 
     @Bean
     private void createDefaultAccount(){
