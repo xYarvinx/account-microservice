@@ -21,7 +21,6 @@ import java.rmi.RemoteException;
 @Component
 @AllArgsConstructor
 public class JwtFilter extends GenericFilterBean {
-    private static final String AUTHORIZATION = "Authorization";
     private final BlacklistTokenService blacklistTokenService;
     private final TokenProvider tokenProvider;
 
