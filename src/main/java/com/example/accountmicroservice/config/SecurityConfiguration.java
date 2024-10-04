@@ -27,11 +27,11 @@ public class SecurityConfiguration {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/Authentication/**",
-                                         "/api/Accounts/**",
-                                         "/api/Doctors/**",
-                                         "/swagger-ui/**",
-                                         "/swagger-resources/*",
-                                         "/v3/api-docs/**").permitAll())
+                                "/api/Accounts/**",
+                                "/api/Doctors/**",
+                                "/swagger-ui/**",
+                                "/swagger-resources/*",
+                                "/v3/api-docs/**").permitAll())
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
