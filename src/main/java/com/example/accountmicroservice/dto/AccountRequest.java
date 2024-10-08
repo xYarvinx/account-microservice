@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.Set;
 
 @Data
-public class CreateAccountRequest {
+public class AccountRequest {
     private String lastName;
     private String firstName;
     private String username;

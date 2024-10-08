@@ -1,9 +1,8 @@
 package com.example.accountmicroservice.service;
 
 import com.example.accountmicroservice.config.JwtAuthentication;
-import com.example.accountmicroservice.config.TokenProvider;
 import com.example.accountmicroservice.dto.AccountResponse;
-import com.example.accountmicroservice.dto.CreateAccountRequest;
+import com.example.accountmicroservice.dto.AccountRequest;
 import com.example.accountmicroservice.dto.SignUpRequest;
 import com.example.accountmicroservice.dto.UpdateAccountRequest;
 import com.example.accountmicroservice.models.Role;
@@ -72,7 +71,7 @@ public class AccountService {
     }
 
     public Optional<AccountEntity> getByUsername(String username){
-        return accountRepository.findByUsername(username);
+         return accountRepository.findByUsername(username);
     }
 
     public void createAccount(SignUpRequest request){
@@ -104,7 +103,7 @@ public class AccountService {
                                     .build();
     }
 
-    public void updateMe(UpdateAccountRequest request) {
+    public void updateAccount(UpdateAccountRequest request) {
         JwtAuthentication jwtAuthentication = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication();
         Optional<AccountEntity> account = accountRepository.findByUsername(jwtAuthentication.getUsername());
         if(account.isPresent()) {
@@ -147,7 +146,7 @@ public class AccountService {
 
     }
 
-    public void createAccountByAdmin(CreateAccountRequest request) {
+    public void createAccountByAdmin(AccountRequest request) {
         AccountEntity user = AccountEntity.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -160,4 +159,44 @@ public class AccountService {
 
         accountRepository.save(user);
     }
+
+    public void updateAccountByAdmin(Long userId, AccountRequest request) {
+        Optional<AccountEntity> account = accountRepository.findById(userId);
+        if(account.isPresent()){
+            if (request.getFirstName() != null) {
+                account.get().setFirstName(request.getFirstName());
+            }
+
+            if (request.getLastName() != null) {
+                account.get().setLastName(request.getLastName());
+            }
+
+            if (request.getPassword() != null) {
+                account.get().setPassword(passwordEncoder.encode(request.getPassword()));
+            }
+
+            if (request.getUsername() != null) {
+                account.get().setUsername(request.getUsername());
+            }
+
+            if(request.getRoles() != null) {
+                account.get().setRoles(request.getRoles().stream()
+                        .map(Role::valueOf)
+                        .collect(Collectors.toSet()));
+            }
+        } else {
+            throw new RuntimeException("{\"error\": \"Аккаунт пользователя не найден\"}");
+        }
+    }
+
+    public void deleteAccount(Long userId) {
+        Optional<AccountEntity> account = accountRepository.findById(userId);
+        if(account.isPresent()){
+            accountRepository.delete(account.get());
+        } else {
+            throw new RuntimeException("{\"error\": \"Аккаунт пользователя не найден\"}");
+        }
+    }
+
+
 }
