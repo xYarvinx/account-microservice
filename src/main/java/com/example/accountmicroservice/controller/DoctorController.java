@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 @ControllerExceptionHandler
 @Tag(name = "Doctor Controller", description = "API для управления данными о докторах")
+@SecurityRequirement(name = "bearerAuth")
 @ApiResponse(responseCode = "40*", description = "Ошибка в запросе",
         content = @Content(schema = @Schema(implementation = ErrorResponse.class)) )
 public class DoctorController {
