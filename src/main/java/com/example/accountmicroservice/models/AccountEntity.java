@@ -26,6 +26,13 @@ public class AccountEntity {
     private String username;
     private String password;
     private Set<Role> roles;
+    private String fullName;
+
+    @PrePersist
+    @PreUpdate
+    public void updateFullName() {
+        this.fullName = this.firstName + " " + this.lastName;
+    }
 
     @Column(nullable = false)
     private boolean deleted = Boolean.FALSE;

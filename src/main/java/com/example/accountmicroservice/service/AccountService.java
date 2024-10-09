@@ -91,7 +91,16 @@ public class AccountService {
     }
 
     public List<AccountResponseDto> getAccounts(Integer from, Integer count) {
-        return accountRepository.findAll().stream()
+
+        if (from == null || from < 0) {
+            throw new InvalidDataException("Параметр from должен быть неотрицательным.");
+        }
+        if (count == null || count <= 0) {
+            throw new InvalidDataException("Параметр count должен быть больше 0");
+        }
+
+
+        List<AccountResponseDto> accounts = accountRepository.findAll().stream()
                 .skip(from)
                 .limit(count)
                 .map(account -> AccountResponseDto.builder()
@@ -103,8 +112,13 @@ public class AccountService {
                                 .map(Role::getAuthority)
                                 .collect(Collectors.toSet()))
                         .build())
-                .collect(Collectors.toList()
-                );
+                .collect(Collectors.toList());
+
+        if (accounts.isEmpty()) {
+            throw new AccountNotFountException("Аккаунты по заданным критериям не найдены");
+        }
+
+        return accounts;
     }
 
     public void createAccountByAdmin(AccountRequestDto request) {
@@ -154,4 +168,39 @@ public class AccountService {
         accountRepository.delete(account);
     }
 
+    public List<AccountEntity> getDoctors(String nameFilter, Integer from, Integer count) {
+        if (nameFilter == null || nameFilter.isEmpty()) {
+            throw new InvalidDataException("Фильтр имени не может быть нулевым или пустым");
+        }
+        if (from == null || from < 0) {
+            throw new InvalidDataException("Параметр from должен быть неотрицательным");
+        }
+        if (count == null || count <= 0) {
+            throw new InvalidDataException("Параметр count должен быть больше 0");
+        }
+
+
+        List<AccountEntity> doctors = accountRepository.findAll().stream()
+                .filter(account -> account.getRoles().contains(Role.DOCTOR))
+                .filter(account -> account.getFullName().contains(nameFilter))
+                .skip(from)
+                .limit(count)
+                .collect(Collectors.toList());
+
+
+        if (doctors.isEmpty()) {
+            throw new AccountNotFountException("Доктора по заданным критериям не найдены");
+        }
+
+        return doctors;
+    }
+
+
+    public AccountEntity getDoctor(Long id) {
+        AccountEntity doctor = getAccount(id);
+        if (!doctor.getRoles().contains(Role.DOCTOR)) {
+            throw new AccountNotFountException("Пользователь не является доктором");
+        }
+        return doctor;
+    }
 }
