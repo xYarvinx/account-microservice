@@ -31,14 +31,14 @@ public class JwtFilter extends GenericFilterBean {
             if (!tokenProvider.validateToken(token)) {
                 ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\":{\"message\":\"Token is invalid\"}");
+                response.getWriter().write("{\"error\":{\"message\":\"Token is invalid\"}}");
                 return;
             }
             if (blacklistTokenService.isBlacklisted(token)) {
 
                 ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\":{\"message\":\"Token has been revoke\"}");
+                response.getWriter().write("{\"error\":{\"message\":\"Token has been revoke\"}}");
                 return;
             }
             final Claims claims = tokenProvider.getClaims(token);
