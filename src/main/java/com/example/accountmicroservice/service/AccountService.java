@@ -1,10 +1,10 @@
 package com.example.accountmicroservice.service;
 
 import com.example.accountmicroservice.config.JwtAuthentication;
-import com.example.accountmicroservice.dto.AccountResponseDto;
-import com.example.accountmicroservice.dto.AccountRequestDto;
-import com.example.accountmicroservice.dto.SignUpRequestDto;
-import com.example.accountmicroservice.dto.UpdateAccountRequestDto;
+import com.example.accountmicroservice.dto.AccountResponse;
+import com.example.accountmicroservice.dto.AccountRequest;
+import com.example.accountmicroservice.dto.SignUpRequest;
+import com.example.accountmicroservice.dto.UpdateAccountRequest;
 import com.example.accountmicroservice.exception.AccountExistException;
 import com.example.accountmicroservice.exception.AccountNotFountException;
 import com.example.accountmicroservice.exception.InvalidDataException;
@@ -45,7 +45,7 @@ public class AccountService {
         return accountRepository.existsByUsername(username);
     }
 
-    public void createAccount(SignUpRequestDto request) {
+    public void createAccount(SignUpRequest request) {
         AccountEntity account = AccountEntity.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -57,7 +57,7 @@ public class AccountService {
         accountRepository.save(account);
     }
 
-    public AccountResponseDto infoMe() {
+    public AccountResponse infoMe() {
         JwtAuthentication jwtAuthentication = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication();
         AccountEntity account = getAccount(jwtAuthentication.getUsername());
 
@@ -65,7 +65,7 @@ public class AccountService {
                 .map(Role::getAuthority)
                 .collect(Collectors.toSet());
 
-        return AccountResponseDto.builder()
+        return AccountResponse.builder()
                 .id(account.getId())
                 .firstName(account.getFirstName())
                 .lastName(account.getLastName())
@@ -75,7 +75,7 @@ public class AccountService {
     }
 
     @Transactional
-    public void updateAccount(UpdateAccountRequestDto request) {
+    public void updateAccount(UpdateAccountRequest request) {
         JwtAuthentication jwtAuthentication = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication();
         AccountEntity account = getAccount(jwtAuthentication.getUsername());
         try {
@@ -90,11 +90,20 @@ public class AccountService {
         }
     }
 
-    public List<AccountResponseDto> getAccounts(Integer from, Integer count) {
-        return accountRepository.findAll().stream()
+    public List<AccountResponse> getAccounts(Integer from, Integer count) {
+
+        if (from == null || from < 0) {
+            throw new InvalidDataException("Параметр from должен быть неотрицательным.");
+        }
+        if (count == null || count <= 0) {
+            throw new InvalidDataException("Параметр count должен быть больше 0");
+        }
+
+
+        List<AccountResponse> accounts = accountRepository.findAll().stream()
                 .skip(from)
                 .limit(count)
-                .map(account -> AccountResponseDto.builder()
+                .map(account -> AccountResponse.builder()
                         .id(account.getId())
                         .firstName(account.getFirstName())
                         .lastName(account.getLastName())
@@ -103,11 +112,16 @@ public class AccountService {
                                 .map(Role::getAuthority)
                                 .collect(Collectors.toSet()))
                         .build())
-                .collect(Collectors.toList()
-                );
+                .collect(Collectors.toList());
+
+        if (accounts.isEmpty()) {
+            throw new AccountNotFountException("Аккаунты по заданным критериям не найдены");
+        }
+
+        return accounts;
     }
 
-    public void createAccountByAdmin(AccountRequestDto request) {
+    public void createAccountByAdmin(AccountRequest request) {
         if (accountRepository.existsByUsername(request.getUsername())) {
             throw new AccountExistException("Пользователь с таким username уже существует.");
         }
@@ -128,7 +142,7 @@ public class AccountService {
     }
 
     @Transactional
-    public void updateAccountByAdmin(Long userId, AccountRequestDto request) {
+    public void updateAccountByAdmin(Long userId, AccountRequest request) {
         AccountEntity account = getAccount(userId);
 
         if (!account.getUsername().equals(request.getUsername()) && accountRepository.existsByUsername(request.getUsername())) {
@@ -154,4 +168,61 @@ public class AccountService {
         accountRepository.delete(account);
     }
 
+    public List<AccountResponse> getDoctors(String nameFilter, Integer from, Integer count) {
+        if (nameFilter == null || nameFilter.isEmpty()) {
+            throw new InvalidDataException("Фильтр имени не может быть нулевым или пустым");
+        }
+        if (from == null || from < 0) {
+            throw new InvalidDataException("Параметр from должен быть неотрицательным");
+        }
+        if (count == null || count <= 0) {
+            throw new InvalidDataException("Параметр count должен быть больше 0");
+        }
+
+
+        List<AccountResponse> doctors = accountRepository.findAll().stream()
+                .filter(account -> account.getRoles().contains(Role.DOCTOR))
+                .filter(account -> account.getFullName().contains(nameFilter))
+                .skip(from)
+                .limit(count)
+                .map(account -> AccountResponse.builder()
+                        .id(account.getId())
+                        .firstName(account.getFirstName())
+                        .lastName(account.getLastName())
+                        .username(account.getUsername())
+                        .roles(account.getRoles().stream()
+                                .map(Role::getAuthority)
+                                .collect(Collectors.toSet()))
+                        .build())
+                .collect(Collectors.toList());
+
+
+        if (doctors.isEmpty()) {
+            throw new AccountNotFountException("Доктора по заданным критериям не найдены");
+        }
+
+        return doctors;
+    }
+
+
+    public AccountResponse getDoctor(Long id) {
+        AccountEntity account = getAccount(id);
+        if (!account.getRoles().contains(Role.DOCTOR)) {
+            throw new AccountNotFountException("Пользователь не является доктором");
+        }
+
+        Set<String> roleStrings = account.getRoles().stream()
+                .map(Role::getAuthority)
+                .collect(Collectors.toSet());
+
+        AccountResponse doctor = AccountResponse.builder()
+                .id(account.getId())
+                .firstName(account.getFirstName())
+                .lastName(account.getLastName())
+                .roles(roleStrings)
+                .username(account.getUsername())
+                .build();
+
+        return doctor;
+    }
 }

@@ -4,9 +4,9 @@ import com.example.accountmicroservice.config.JwtAuthentication;
 import com.example.accountmicroservice.exception.AccountExistException;
 import com.example.accountmicroservice.exception.InvalidDataException;
 import com.example.accountmicroservice.exception.InvalidTokenException;
-import com.example.accountmicroservice.dto.JwtResponseDto;
-import com.example.accountmicroservice.dto.SignInRequestDto;
-import com.example.accountmicroservice.dto.SignUpRequestDto;
+import com.example.accountmicroservice.dto.JwtResponse;
+import com.example.accountmicroservice.dto.SignInRequest;
+import com.example.accountmicroservice.dto.SignUpRequest;
 import com.example.accountmicroservice.models.AccountEntity;
 import com.example.accountmicroservice.config.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +25,7 @@ public class AuthenticationService {
     private final BlacklistTokenService blacklistTokenService;
     private final RefreshTokenService refreshTokenService;
 
-    public void signUp(SignUpRequestDto request) {
+    public void signUp(SignUpRequest request) {
         if (accountService.existsByUsername(request.getUsername())) {
             throw new AccountExistException("Пользователь с таким username уже существует.");
         }
@@ -33,7 +33,7 @@ public class AuthenticationService {
     }
 
 
-    public JwtResponseDto signIn(SignInRequestDto request) {
+    public JwtResponse signIn(SignInRequest request) {
        AccountEntity account = accountService.getAccount(request.getUsername());
 
         if(passwordEncoder.matches(request.getPassword(), account.getPassword())){
@@ -45,7 +45,7 @@ public class AuthenticationService {
             }
             refreshTokenService.saveRefreshToken(account.getUsername(), refreshToken);
 
-            return new JwtResponseDto(accessToken, refreshToken);
+            return new JwtResponse(accessToken, refreshToken);
         } else {
             throw new InvalidDataException("Неверный логин или пароль");
         }
@@ -72,7 +72,7 @@ public class AuthenticationService {
     }
 
 
-    public JwtResponseDto refresh(String refreshToken) {
+    public JwtResponse refresh(String refreshToken) {
         if(!refreshTokenService.validateRefreshToken(refreshToken)){
             throw new InvalidTokenException("Неверный токен обновления");
         }
@@ -86,6 +86,6 @@ public class AuthenticationService {
         refreshTokenService.deleteRefreshToken(username);
         refreshTokenService.saveRefreshToken(username, newRefreshToken);
 
-        return new JwtResponseDto(newAccessToken, newRefreshToken);
+        return new JwtResponse(newAccessToken, newRefreshToken);
     }
 }

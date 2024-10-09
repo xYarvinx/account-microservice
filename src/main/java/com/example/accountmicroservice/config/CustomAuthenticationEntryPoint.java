@@ -1,7 +1,5 @@
 package com.example.accountmicroservice.config;
 
-import com.example.accountmicroservice.dto.ErrorDto;
-import com.example.accountmicroservice.dto.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
@@ -20,6 +18,6 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"error\":{\"message\":\"Unauthorized\"}");
+        response.getWriter().write("{\"error\":{\"message\":\"Unauthorized\"}}");
     }
 }

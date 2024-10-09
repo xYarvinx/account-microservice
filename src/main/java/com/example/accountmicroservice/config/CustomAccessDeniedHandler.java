@@ -1,7 +1,5 @@
 package com.example.accountmicroservice.config;
 
-import com.example.accountmicroservice.dto.ErrorDto;
-import com.example.accountmicroservice.dto.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,6 +18,6 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write("{\"error\":{\"message\":\"Forbidden\"}");
+        response.getWriter().write("{\"error\":{\"message\":\"Forbidden\"}}");
     }
 }

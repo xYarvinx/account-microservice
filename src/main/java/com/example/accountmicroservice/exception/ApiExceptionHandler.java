@@ -1,7 +1,7 @@
 package com.example.accountmicroservice.exception;
 
-import com.example.accountmicroservice.dto.ErrorDto;
-import com.example.accountmicroservice.dto.ErrorResponseDto;
+import com.example.accountmicroservice.dto.Error;
+import com.example.accountmicroservice.dto.ErrorResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class ApiExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ErrorResponseDto> handleApiException(ApiException e) {
-        ErrorDto error = ErrorDto.builder()
+    public ResponseEntity<ErrorResponse> handleApiException(ApiException e) {
+        Error error = Error.builder()
                 .message(e.getMessage())
                 .build();
 
-        ErrorResponseDto result = new ErrorResponseDto().setError(error);
+        ErrorResponse result = new ErrorResponse().setError(error);
 
         return ResponseEntity
                 .status(e.getHttpStatus())
