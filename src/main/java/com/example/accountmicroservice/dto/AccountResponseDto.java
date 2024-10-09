@@ -7,7 +7,7 @@ import java.util.Set;
 
 @Data
 @Builder
-public class AccountResponse {
+public class AccountResponseDto {
     private Long id;
     private String firstName;
     private String lastName;

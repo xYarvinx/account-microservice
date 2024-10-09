@@ -1,19 +1,20 @@
 package com.example.accountmicroservice.service;
 
 import com.example.accountmicroservice.config.JwtAuthentication;
-import com.example.accountmicroservice.config.TokenProvider;
-import com.example.accountmicroservice.dto.JwtResponse;
-import com.example.accountmicroservice.dto.SignInRequest;
-import com.example.accountmicroservice.dto.SignUpRequest;
+import com.example.accountmicroservice.exception.AccountExistException;
+import com.example.accountmicroservice.exception.InvalidDataException;
+import com.example.accountmicroservice.exception.InvalidTokenException;
+import com.example.accountmicroservice.dto.JwtResponseDto;
+import com.example.accountmicroservice.dto.SignInRequestDto;
+import com.example.accountmicroservice.dto.SignUpRequestDto;
 import com.example.accountmicroservice.models.AccountEntity;
+import com.example.accountmicroservice.config.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.Date;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,31 +25,29 @@ public class AuthenticationService {
     private final BlacklistTokenService blacklistTokenService;
     private final RefreshTokenService refreshTokenService;
 
-    public void signUp(SignUpRequest request) {
-        if(accountService.getByUsername(request.getUsername()).isPresent()){
-            throw new RuntimeException("{\"error\": \"Такой пользователь уже существует\"}");
+    public void signUp(SignUpRequestDto request) {
+        if (accountService.existsByUsername(request.getUsername())) {
+            throw new AccountExistException("Пользователь с таким username уже существует.");
         }
         accountService.createAccount(request);
     }
 
 
-    public JwtResponse signIn(SignInRequest request) {
-        Optional<AccountEntity> account = Optional.ofNullable(accountService
-                    .getByUsername(request.getUsername())
-                    .orElseThrow(() -> new RuntimeException("{\"error\": \"Пользователь не найден\"}")));
+    public JwtResponseDto signIn(SignInRequestDto request) {
+       AccountEntity account = accountService.getAccount(request.getUsername());
 
-        if( account.isPresent() && passwordEncoder.matches(request.getPassword(), account.get().getPassword())){
+        if(passwordEncoder.matches(request.getPassword(), account.getPassword())){
             final String accessToken = tokenProvider.generateAccessToken(account);
             final String refreshToken = tokenProvider.generateRefreshToken(account);
 
-            if(refreshTokenService.getRefreshToken(account.get().getUsername()) != null){
-                refreshTokenService.deleteRefreshToken(account.get().getUsername());
+            if(refreshTokenService.getRefreshToken(account.getUsername()) != null){
+                refreshTokenService.deleteRefreshToken(account.getUsername());
             }
-            refreshTokenService.saveRefreshToken(account.get().getUsername(), refreshToken);
+            refreshTokenService.saveRefreshToken(account.getUsername(), refreshToken);
 
-            return new JwtResponse(accessToken, refreshToken);
+            return new JwtResponseDto(accessToken, refreshToken);
         } else {
-            throw new RuntimeException("{\"error\": \"Неверный логин или пароль\"}");
+            throw new InvalidDataException("Неверный логин или пароль");
         }
     }
 
@@ -73,20 +72,13 @@ public class AuthenticationService {
     }
 
 
-    public JwtResponse refresh(String refreshToken) {
-        if(!tokenProvider.validateToken(refreshToken)){
-            throw new RuntimeException("{\"error\": \"Неверный токен обновления\"}");
-        }
-
-        String username = tokenProvider.getClaims(refreshToken).getSubject();
+    public JwtResponseDto refresh(String refreshToken) {
         if(!refreshTokenService.validateRefreshToken(refreshToken)){
-            throw new RuntimeException("{\"error\": \"Неверный токен обновления\"}");
+            throw new InvalidTokenException("Неверный токен обновления");
         }
+        String username = tokenProvider.getClaims(refreshToken).getSubject();
 
-        Optional<AccountEntity> account = accountService.getByUsername(username);
-        if(account.isEmpty()){
-            throw new RuntimeException("{\"error\": \"Пользователь не найден\"}");
-        }
+        AccountEntity account = accountService.getAccount(username);
 
         final String newAccessToken = tokenProvider.generateAccessToken(account);
         final String newRefreshToken = tokenProvider.generateRefreshToken(account);
@@ -94,6 +86,6 @@ public class AuthenticationService {
         refreshTokenService.deleteRefreshToken(username);
         refreshTokenService.saveRefreshToken(username, newRefreshToken);
 
-        return new JwtResponse(newAccessToken, newRefreshToken);
+        return new JwtResponseDto(newAccessToken, newRefreshToken);
     }
 }

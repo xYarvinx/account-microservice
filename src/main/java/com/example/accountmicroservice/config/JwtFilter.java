@@ -1,5 +1,7 @@
 package com.example.accountmicroservice.config;
 
+import com.example.accountmicroservice.dto.ErrorDto;
+import com.example.accountmicroservice.dto.ErrorResponseDto;
 import com.example.accountmicroservice.service.BlacklistTokenService;
 import com.example.accountmicroservice.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
@@ -13,10 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
-
-import java.rmi.RemoteException;
 
 @Component
 @AllArgsConstructor
@@ -32,14 +31,14 @@ public class JwtFilter extends GenericFilterBean {
             if (!tokenProvider.validateToken(token)) {
                 ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\": \"Invalid token\"}");
+                response.getWriter().write("{\"error\":{\"message\":\"Token is invalid\"}");
                 return;
             }
             if (blacklistTokenService.isBlacklisted(token)) {
 
                 ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"error\": \"Token was revoke\"}");
+                response.getWriter().write("{\"error\":{\"message\":\"Token has been revoke\"}");
                 return;
             }
             final Claims claims = tokenProvider.getClaims(token);
