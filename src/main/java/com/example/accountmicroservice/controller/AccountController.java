@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,7 @@ import java.util.List;
 @Tag(name = "Account Controller", description = "API для управления учетными записями пользователей")
 @ApiResponse(responseCode = "40*", description = "Ошибка в запросе",
         content = @Content(schema = @Schema(implementation = ErrorResponse.class)) )
+@SecurityRequirement(name = "bearerAuth")
 public class AccountController {
     private final AccountService accountService;
 
