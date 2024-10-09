@@ -3,8 +3,7 @@ package com.example.accountmicroservice.dto;
 import lombok.Data;
 
 @Data
-public class UpdateAccountRequest {
-    private String lastName;
-    private String firstName;
+public class SignInRequestDto {
+    private String username;
     private String password;
 }

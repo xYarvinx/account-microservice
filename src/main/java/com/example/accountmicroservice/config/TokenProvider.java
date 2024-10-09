@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.Optional;
 
 
 @Component
@@ -35,25 +34,25 @@ public class TokenProvider {
     }
 
 
-    public String generateAccessToken(Optional<AccountEntity> account) {
+    public String generateAccessToken(AccountEntity account) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant accessExpirationInstant = now.plus(Duration.ofMillis(ACCESS_TOKEN_EXPIRATION)).atZone(ZoneId.systemDefault()).toInstant();
         final Date accessExpiration = Date.from(accessExpirationInstant);
         return Jwts.builder()
-                .setSubject(account.get().getUsername())
+                .setSubject(account.getUsername())
                 .setExpiration(accessExpiration)
                 .signWith(JWT_SECRET)
-                .claim("roles", account.get().getRoles())
-                .claim("firstname", account.get().getFirstName())
+                .claim("roles", account.getRoles())
+                .claim("firstname", account.getFirstName())
                 .compact();
     }
 
-    public String generateRefreshToken(@NonNull Optional<AccountEntity> account) {
+    public String generateRefreshToken(@NonNull AccountEntity account) {
         final LocalDateTime now = LocalDateTime.now();
         final Instant refreshExpirationInstant = now.plus(Duration.ofMillis(REFRESH_TOKEN_EXPIRATION)).atZone(ZoneId.systemDefault()).toInstant();
         final Date refreshExpiration = Date.from(refreshExpirationInstant);
         return Jwts.builder()
-                .setSubject(account.get().getUsername())
+                .setSubject(account.getUsername())
                 .setExpiration(refreshExpiration)
                 .signWith(JWT_SECRET)
                 .compact();

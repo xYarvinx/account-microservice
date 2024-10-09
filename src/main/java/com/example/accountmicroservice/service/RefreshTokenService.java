@@ -2,7 +2,6 @@ package com.example.accountmicroservice.service;
 
 import com.example.accountmicroservice.config.TokenProvider;
 import lombok.RequiredArgsConstructor;
-import org.antlr.v4.runtime.Token;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +29,7 @@ public class RefreshTokenService {
     }
 
     public boolean validateRefreshToken(String refreshToken) {
-        String username = tokenProvider.getClaims(refreshToken).get("username", String.class);
+        String username = tokenProvider.getClaims(refreshToken).getSubject();
         String storedToken = getRefreshToken(username);
         return storedToken != null && storedToken.equals(refreshToken) && tokenProvider.validateToken(refreshToken);
     }

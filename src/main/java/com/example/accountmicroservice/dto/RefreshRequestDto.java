@@ -3,6 +3,6 @@ package com.example.accountmicroservice.dto;
 import lombok.Data;
 
 @Data
-public class RefreshRequest {
+public class RefreshRequestDto {
     private String refreshToken;
 }

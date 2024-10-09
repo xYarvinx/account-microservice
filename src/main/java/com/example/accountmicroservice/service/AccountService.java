@@ -1,24 +1,27 @@
 package com.example.accountmicroservice.service;
 
 import com.example.accountmicroservice.config.JwtAuthentication;
-import com.example.accountmicroservice.dto.AccountResponse;
-import com.example.accountmicroservice.dto.AccountRequest;
-import com.example.accountmicroservice.dto.SignUpRequest;
-import com.example.accountmicroservice.dto.UpdateAccountRequest;
+import com.example.accountmicroservice.dto.AccountResponseDto;
+import com.example.accountmicroservice.dto.AccountRequestDto;
+import com.example.accountmicroservice.dto.SignUpRequestDto;
+import com.example.accountmicroservice.dto.UpdateAccountRequestDto;
+import com.example.accountmicroservice.exception.AccountExistException;
+import com.example.accountmicroservice.exception.AccountNotFountException;
+import com.example.accountmicroservice.exception.InvalidDataException;
 import com.example.accountmicroservice.models.Role;
 import com.example.accountmicroservice.models.AccountEntity;
 import com.example.accountmicroservice.repository.AccountRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -26,177 +29,129 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Bean
-    private void createDefaultAccount(){
-        if(accountRepository.findByUsername("admin").isEmpty()){
-            AccountEntity user = AccountEntity.builder()
-                    .firstName("admin")
-                    .lastName("admin")
-                    .password(passwordEncoder.encode("admin"))
-                    .username("admin")
-                    .roles(Collections.singleton(Role.ADMIN))
-                    .build();
-            accountRepository.save(user);
-        }
-        if(accountRepository.findByUsername("user").isEmpty()){
-            AccountEntity user = AccountEntity.builder()
-                    .firstName("user")
-                    .lastName("user")
-                    .password(passwordEncoder.encode("user"))
-                    .username("user")
-                    .roles(Collections.singleton(Role.USER))
-                    .build();
-            accountRepository.save(user);
-        }
-        if(accountRepository.findByUsername("doctor").isEmpty()){
-            AccountEntity user = AccountEntity.builder()
-                    .firstName("doctor")
-                    .lastName("doctor")
-                    .password(passwordEncoder.encode("doctor"))
-                    .username("doctor")
-                    .roles(Collections.singleton(Role.DOCTOR))
-                    .build();
-            accountRepository.save(user);
-        }
-        if(accountRepository.findByUsername("manager").isEmpty()){
-            AccountEntity user = AccountEntity.builder()
-                    .firstName("manager")
-                    .lastName("manager")
-                    .password(passwordEncoder.encode("manager"))
-                    .username("manager")
-                    .roles(Collections.singleton(Role.MANAGER))
-                    .build();
-            accountRepository.save(user);
-        }
+    public AccountEntity getAccount(String username) {
+        return accountRepository.findByUsername(username).orElseThrow(
+                () -> new AccountNotFountException("Пользователь не найден")
+        );
     }
 
-    public Optional<AccountEntity> getByUsername(String username){
-         return accountRepository.findByUsername(username);
+    public AccountEntity getAccount(Long id) {
+        return accountRepository.findById(id).orElseThrow(
+                () -> new AccountNotFountException("Пользователь не найден")
+        );
     }
 
-    public void createAccount(SignUpRequest request){
-        AccountEntity user = AccountEntity.builder()
-                        .firstName(request.getFirstName())
-                        .lastName(request.getLastName())
-                        .password(passwordEncoder.encode(request.getPassword()))
-                        .username(request.getUsername())
-                        .roles(Collections.singleton(Role.USER))
-                        .build();
-
-        accountRepository.save(user);
+    public boolean existsByUsername(String username) {
+        return accountRepository.existsByUsername(username);
     }
 
-    public AccountResponse infoMe() {
-        JwtAuthentication jwtAuthentication = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        Optional<AccountEntity> account = accountRepository.findByUsername(jwtAuthentication.getUsername());
-
-        Set<String> roleStrings = account.get().getRoles().stream()
-                .map(Role::getAuthority)
-                .collect(Collectors.toSet());
-
-        return AccountResponse.builder()
-                                    .id(account.get().getId())
-                                    .firstName(account.get().getFirstName())
-                                    .lastName(account.get().getLastName())
-                                    .roles(roleStrings)
-                                    .username(account.get().getUsername())
-                                    .build();
-    }
-
-    public void updateAccount(UpdateAccountRequest request) {
-        JwtAuthentication jwtAuthentication = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication();
-        Optional<AccountEntity> account = accountRepository.findByUsername(jwtAuthentication.getUsername());
-        if(account.isPresent()) {
-            if (request.getFirstName() != null) {
-                account.get().setFirstName(request.getFirstName());
-            }
-
-            if (request.getLastName() != null) {
-                account.get().setLastName(request.getLastName());
-            }
-
-            if (request.getPassword() != null) {
-                account.get().setPassword(passwordEncoder.encode(request.getPassword()));
-            }
-
-        accountRepository.save(account.get());
-        } else {
-            throw new RuntimeException("{\"error\": \"Пользователь не найден\"}");
-        }
-    }
-
-    public List<AccountResponse> getAccounts(Integer from, Integer count) {
-        try {
-            return accountRepository.findAll().stream()
-                    .skip(from)
-                    .limit(count)
-                    .map(account -> AccountResponse.builder()
-                            .id(account.getId())
-                            .firstName(account.getFirstName())
-                            .lastName(account.getLastName())
-                            .username(account.getUsername())
-                            .roles(account.getRoles().stream()
-                                    .map(Role::getAuthority)
-                                    .collect(Collectors.toSet()))
-                            .build())
-                    .collect(Collectors.toList());
-        } catch (Exception e){
-            throw new RuntimeException("{\"error\": \"Ошибка при получении списка пользователей\"}");
-        }
-
-    }
-
-    public void createAccountByAdmin(AccountRequest request) {
-        AccountEntity user = AccountEntity.builder()
+    public void createAccount(SignUpRequestDto request) {
+        AccountEntity account = AccountEntity.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .username(request.getUsername())
-                .roles(request.getRoles().stream()
-                        .map(Role::valueOf)
-                        .collect(Collectors.toSet()))
+                .roles(Collections.singleton(Role.USER))
                 .build();
 
-        accountRepository.save(user);
+        accountRepository.save(account);
     }
 
-    public void updateAccountByAdmin(Long userId, AccountRequest request) {
-        Optional<AccountEntity> account = accountRepository.findById(userId);
-        if(account.isPresent()){
-            if (request.getFirstName() != null) {
-                account.get().setFirstName(request.getFirstName());
-            }
+    public AccountResponseDto infoMe() {
+        JwtAuthentication jwtAuthentication = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        AccountEntity account = getAccount(jwtAuthentication.getUsername());
 
-            if (request.getLastName() != null) {
-                account.get().setLastName(request.getLastName());
-            }
+        Set<String> roleStrings = account.getRoles().stream()
+                .map(Role::getAuthority)
+                .collect(Collectors.toSet());
 
-            if (request.getPassword() != null) {
-                account.get().setPassword(passwordEncoder.encode(request.getPassword()));
-            }
+        return AccountResponseDto.builder()
+                .id(account.getId())
+                .firstName(account.getFirstName())
+                .lastName(account.getLastName())
+                .roles(roleStrings)
+                .username(account.getUsername())
+                .build();
+    }
 
-            if (request.getUsername() != null) {
-                account.get().setUsername(request.getUsername());
-            }
+    @Transactional
+    public void updateAccount(UpdateAccountRequestDto request) {
+        JwtAuthentication jwtAuthentication = (JwtAuthentication) SecurityContextHolder.getContext().getAuthentication();
+        AccountEntity account = getAccount(jwtAuthentication.getUsername());
+        try {
+            account = account.builder()
+                    .lastName(request.getLastName())
+                    .firstName(request.getFirstName())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .build();
+            accountRepository.save(account);
+        } catch (Exception e) {
+            throw new InvalidDataException("Ошибка в данных");
+        }
+    }
 
-            if(request.getRoles() != null) {
-                account.get().setRoles(request.getRoles().stream()
-                        .map(Role::valueOf)
-                        .collect(Collectors.toSet()));
-            }
-        } else {
-            throw new RuntimeException("{\"error\": \"Аккаунт пользователя не найден\"}");
+    public List<AccountResponseDto> getAccounts(Integer from, Integer count) {
+        return accountRepository.findAll().stream()
+                .skip(from)
+                .limit(count)
+                .map(account -> AccountResponseDto.builder()
+                        .id(account.getId())
+                        .firstName(account.getFirstName())
+                        .lastName(account.getLastName())
+                        .username(account.getUsername())
+                        .roles(account.getRoles().stream()
+                                .map(Role::getAuthority)
+                                .collect(Collectors.toSet()))
+                        .build())
+                .collect(Collectors.toList()
+                );
+    }
+
+    public void createAccountByAdmin(AccountRequestDto request) {
+        if (accountRepository.existsByUsername(request.getUsername())) {
+            throw new AccountExistException("Пользователь с таким username уже существует.");
+        }
+        try {
+            AccountEntity account = new AccountEntity().builder()
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .username(request.getUsername())
+                    .roles(request.getRoles().stream()
+                            .map(role -> Role.valueOf(role.toUpperCase()))
+                            .collect(Collectors.toSet()))
+                    .build();
+            accountRepository.save(account);
+        } catch (Exception e) {
+            throw new InvalidDataException("Ошибка в данных");
+        }
+    }
+
+    @Transactional
+    public void updateAccountByAdmin(Long userId, AccountRequestDto request) {
+        AccountEntity account = getAccount(userId);
+
+        if (!account.getUsername().equals(request.getUsername()) && accountRepository.existsByUsername(request.getUsername())) {
+            throw new AccountExistException("Пользователь с таким username уже существует.");
+        }
+
+        try {
+            account.setUsername(request.getUsername());
+            account.setPassword(passwordEncoder.encode(request.getPassword()));
+            account.setFirstName(request.getFirstName());
+            account.setLastName(request.getLastName());
+            account.setRoles(request.getRoles().stream()
+                    .map(role -> Role.valueOf(role.toUpperCase()))
+                    .collect(Collectors.toSet()));
+            accountRepository.save(account);
+        } catch (Exception e) {
+            throw new InvalidDataException("Ошибка в данных");
         }
     }
 
     public void deleteAccount(Long userId) {
-        Optional<AccountEntity> account = accountRepository.findById(userId);
-        if(account.isPresent()){
-            accountRepository.delete(account.get());
-        } else {
-            throw new RuntimeException("{\"error\": \"Аккаунт пользователя не найден\"}");
-        }
+        AccountEntity account = getAccount(userId);
+        accountRepository.delete(account);
     }
-
 
 }
