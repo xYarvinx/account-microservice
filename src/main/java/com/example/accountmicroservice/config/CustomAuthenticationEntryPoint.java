@@ -1,7 +1,5 @@
 package com.example.accountmicroservice.config;
 
-import com.example.accountmicroservice.dto.ErrorDto;
-import com.example.accountmicroservice.dto.ErrorResponseDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;

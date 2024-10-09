@@ -1,7 +1,5 @@
 package com.example.accountmicroservice.config;
 
-import com.example.accountmicroservice.dto.ErrorDto;
-import com.example.accountmicroservice.dto.ErrorResponseDto;
 import com.example.accountmicroservice.service.BlacklistTokenService;
 import com.example.accountmicroservice.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
