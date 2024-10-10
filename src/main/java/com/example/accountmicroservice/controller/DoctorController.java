@@ -3,7 +3,7 @@ package com.example.accountmicroservice.controller;
 import com.example.accountmicroservice.dto.AccountResponse;
 import com.example.accountmicroservice.dto.ErrorResponse;
 import com.example.accountmicroservice.exception.ControllerExceptionHandler;
-import com.example.accountmicroservice.models.AccountEntity;
+import com.example.accountmicroservice.model.AccountEntity;
 import com.example.accountmicroservice.service.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
