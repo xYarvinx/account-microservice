@@ -7,7 +7,7 @@ import com.example.accountmicroservice.exception.InvalidTokenException;
 import com.example.accountmicroservice.dto.JwtResponse;
 import com.example.accountmicroservice.dto.SignInRequest;
 import com.example.accountmicroservice.dto.SignUpRequest;
-import com.example.accountmicroservice.models.AccountEntity;
+import com.example.accountmicroservice.model.AccountEntity;
 import com.example.accountmicroservice.config.TokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

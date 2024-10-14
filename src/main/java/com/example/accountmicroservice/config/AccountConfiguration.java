@@ -1,7 +1,7 @@
 package com.example.accountmicroservice.config;
 
-import com.example.accountmicroservice.models.AccountEntity;
-import com.example.accountmicroservice.models.Role;
+import com.example.accountmicroservice.model.AccountEntity;
+import com.example.accountmicroservice.model.Role;
 import com.example.accountmicroservice.repository.AccountRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;

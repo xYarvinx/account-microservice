@@ -1,6 +1,6 @@
 package com.example.accountmicroservice.config;
 
-import com.example.accountmicroservice.models.Role;
+import com.example.accountmicroservice.model.Role;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.Authentication;

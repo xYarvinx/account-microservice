@@ -32,7 +32,9 @@ public class SecurityConfiguration {
                                 "/api/Doctors/**",
                                 "/swagger-ui/**",
                                 "/swagger-resources/*",
-                                "/v3/api-docs/**").permitAll())
+                                "/v3/api-docs/**")
+                        .permitAll()
+                )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)

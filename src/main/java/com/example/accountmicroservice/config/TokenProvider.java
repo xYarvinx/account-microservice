@@ -1,6 +1,6 @@
 package com.example.accountmicroservice.config;
 
-import com.example.accountmicroservice.models.AccountEntity;
+import com.example.accountmicroservice.model.AccountEntity;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;

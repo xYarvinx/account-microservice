@@ -1,4 +1,4 @@
-package com.example.accountmicroservice.models;
+package com.example.accountmicroservice.model;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
