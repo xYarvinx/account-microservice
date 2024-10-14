@@ -1,7 +1,7 @@
 package com.example.accountmicroservice.utils;
 
 import com.example.accountmicroservice.config.JwtAuthentication;
-import com.example.accountmicroservice.models.Role;
+import com.example.accountmicroservice.model.Role;
 import io.jsonwebtoken.Claims;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.accountmicroservice.models;
+package com.example.accountmicroservice.model;
 
 import jakarta.persistence.*;
 import jakarta.persistence.Table;

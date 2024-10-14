@@ -24,7 +24,7 @@ public class SecurityConfiguration {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain accountFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/Authentication/**",
@@ -32,7 +32,9 @@ public class SecurityConfiguration {
                                 "/api/Doctors/**",
                                 "/swagger-ui/**",
                                 "/swagger-resources/*",
-                                "/v3/api-docs/**").permitAll())
+                                "/v3/api-docs/**")
+                        .permitAll()
+                )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
