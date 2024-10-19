@@ -25,6 +25,11 @@ public class RabbitMQConfiguration {
     }
 
     @Bean
+    public TopicExchange roleExchange() {
+        return new TopicExchange("roleExchange");
+    }
+
+    @Bean
     public Queue authRequestQueue() {
         return new Queue("authRequestQueue", true);
     }
@@ -32,6 +37,16 @@ public class RabbitMQConfiguration {
     @Bean
     public Queue authResponseQueue() {
         return new Queue("authResponseQueue", true);
+    }
+
+    @Bean
+    public Binding bindingRoleRequest(Queue authRequestQueue, TopicExchange roleExchange) {
+        return BindingBuilder.bind(authRequestQueue).to(roleExchange).with("role.admin.request");
+    }
+
+    @Bean
+    public Binding bindingRoleResponse(Queue authResponseQueue, TopicExchange  roleExchange) {
+        return BindingBuilder.bind(authResponseQueue).to( roleExchange).with("role.admin.response");
     }
 
     @Bean
@@ -43,6 +58,7 @@ public class RabbitMQConfiguration {
     public Binding bindingAuthResponse(Queue authResponseQueue, TopicExchange authExchange) {
         return BindingBuilder.bind(authResponseQueue).to(authExchange).with("auth.response");
     }
+
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {
         Jackson2JsonMessageConverter jsonConverter = new Jackson2JsonMessageConverter();

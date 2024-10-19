@@ -15,7 +15,9 @@ public class ApiExceptionHandler {
                 .message(e.getMessage())
                 .build();
 
-        ErrorResponse result = new ErrorResponse().setError(error);
+        ErrorResponse result = ErrorResponse.builder()
+                .error(error)
+                .build();
 
         return ResponseEntity
                 .status(e.getHttpStatus())
