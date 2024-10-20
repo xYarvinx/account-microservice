@@ -1,6 +1,7 @@
 package com.example.accountmicroservice.config;
 
 import com.example.accountmicroservice.model.AccountEntity;
+import com.example.accountmicroservice.model.Role;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -13,7 +14,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 @Component
@@ -95,5 +98,25 @@ public class TokenProvider {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    public List<Role> getRolesFromToken(String token) {
+        Claims claims = getClaims(token);
+
+        List<String> rolesAsString = claims.get("roles", List.class);
+        List<Role> roles = new ArrayList<>();
+
+        if (rolesAsString != null) {
+            for (String roleName : rolesAsString) {
+                try {
+
+                    Role role = Role.valueOf(roleName);
+                    roles.add(role);
+                } catch (IllegalArgumentException e) {
+                    throw new RuntimeException("Invalid role found in token: " + roleName);
+                }
+            }
+        }
+        return roles;
     }
 }

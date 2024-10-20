@@ -9,6 +9,8 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class RabbitService {
     private final TokenProvider tokenProvider;
@@ -24,19 +26,20 @@ public class RabbitService {
         boolean isValid = tokenProvider.validateToken(request.getToken());
         TokenValidationResponse response = new TokenValidationResponse(isValid, request.getCorrelationId());
 
-        rabbitTemplate.convertAndSend("authExchange", "auth.response", response);
+        rabbitTemplate.convertAndSend("authExchange", "auth.response." + request.getCorrelationId(), response);
     }
 
-    @RabbitListener(queues = "authRequestQueue")
+
+    @RabbitListener(queues = "roleRequestQueue")
     public void validateIsAdmin(TokenValidationRequest request) {
         boolean isAdmin = false;
-        Role role = (Role) tokenProvider.getClaims(request.getToken()).get("role");
-        if(role.equals(Role.ADMIN)){
+        List<Role> role =  tokenProvider.getRolesFromToken(request.getToken());
+        if (role.contains(Role.ADMIN)) {
             isAdmin = true;
         }
         TokenValidationResponse response = new TokenValidationResponse(isAdmin, request.getCorrelationId());
 
-        rabbitTemplate.convertAndSend("roleExchange","role.admin.response", response);
+        rabbitTemplate.convertAndSend("roleExchange", "role.response." + request.getCorrelationId(), response);
     }
 }
 
