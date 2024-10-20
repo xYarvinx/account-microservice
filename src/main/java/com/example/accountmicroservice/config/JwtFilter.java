@@ -1,7 +1,10 @@
 package com.example.accountmicroservice.config;
 
+import com.example.accountmicroservice.dto.Error;
+import com.example.accountmicroservice.dto.ErrorResponse;
 import com.example.accountmicroservice.service.BlacklistTokenService;
 import com.example.accountmicroservice.utils.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.FilterChain;
@@ -20,6 +23,7 @@ import org.springframework.web.filter.GenericFilterBean;
 public class JwtFilter extends GenericFilterBean {
     private final BlacklistTokenService blacklistTokenService;
     private final TokenProvider tokenProvider;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain)
@@ -27,16 +31,11 @@ public class JwtFilter extends GenericFilterBean {
         final String token = tokenProvider.extractToken((HttpServletRequest) request);
         if (token != null) {
             if (!tokenProvider.validateToken(token)) {
-                ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"error\":{\"message\":\"Token is invalid\"}}");
+                sendErrorResponse(((HttpServletResponse) response),HttpServletResponse.SC_UNAUTHORIZED,"Token is invalid");
                 return;
             }
             if (blacklistTokenService.isBlacklisted(token)) {
-
-                ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("{\"error\":{\"message\":\"Token has been revoke\"}}");
+                sendErrorResponse(((HttpServletResponse) response),HttpServletResponse.SC_UNAUTHORIZED,"Token has been revoke");
                 return;
             }
             final Claims claims = tokenProvider.getClaims(token);
@@ -45,5 +44,18 @@ public class JwtFilter extends GenericFilterBean {
             SecurityContextHolder.getContext().setAuthentication(jwtInfoToken);
         }
         filterChain.doFilter(request, response);
+    }
+
+    private void sendErrorResponse(HttpServletResponse response, int status, String message) throws java.io.IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .error(Error.builder()
+                        .message(message)
+                        .build())
+                .build();
+
+        String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+        response.getWriter().write(jsonResponse);
     }
 }
