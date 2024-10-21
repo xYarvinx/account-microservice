@@ -15,15 +15,20 @@ import java.util.List;
 public class RabbitService {
     private final TokenProvider tokenProvider;
     private final RabbitTemplate rabbitTemplate;
+    private final BlacklistTokenService blacklistTokenService;
 
-    public RabbitService(TokenProvider tokenProvider, RabbitTemplate rabbitTemplate) {
+    public RabbitService(TokenProvider tokenProvider, RabbitTemplate rabbitTemplate, BlacklistTokenService blacklistTokenService) {
         this.tokenProvider = tokenProvider;
         this.rabbitTemplate = rabbitTemplate;
+        this.blacklistTokenService =  blacklistTokenService;
     }
 
     @RabbitListener(queues = "authRequestQueue")
     public void validateToken(TokenValidationRequest request) {
-        boolean isValid = tokenProvider.validateToken(request.getToken());
+        boolean isValid = false;
+        if(!blacklistTokenService.isBlacklisted(request.getToken()) && tokenProvider.validateToken(request.getToken())) {
+            isValid = true;
+        }
         TokenValidationResponse response = new TokenValidationResponse(isValid, request.getCorrelationId());
 
         rabbitTemplate.convertAndSend("authExchange", "auth.response." + request.getCorrelationId(), response);
