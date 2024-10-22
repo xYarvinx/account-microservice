@@ -10,10 +10,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
-        info = @Info(title = "Simbir.Health", version = "1.0", description = "Платформа для управления клиническими процессами"),
+        info = @Info(title = "Simbir.Health", version = "1.0", description = "Платформа для управления клиническими процессами - Микросервис Аккаунтов"),
         servers ={
                 @Server(url = "http://localhost:8081", description = "Account-microservice"),
-                @Server(url = "http://localhost:8082", description = "Hospital-microservice")
         },
         security = @SecurityRequirement(name = "bearerAuth")
 )
@@ -24,5 +23,5 @@ import org.springframework.context.annotation.Configuration;
         bearerFormat = "JWT",
         description = "Введите JWT токен в формате: Bearer {token}"
 )
-public class OpenAPIConfig {
+public class OpenAPIConfiguration {
 }
