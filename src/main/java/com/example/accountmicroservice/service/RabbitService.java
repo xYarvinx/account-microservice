@@ -61,7 +61,7 @@ public class RabbitService {
         return accountService.userExistsWithRole(userId, role);
     }
 
-    @RabbitListener(queues = "userIdByTokenRequestQueue()")
+    @RabbitListener(queues = "userIdByTokenRequestQueue")
     public Long getUserIdByToken(String token) {
         String username = tokenProvider.getUsernameFromToken(token);
         return accountService.getAccount(username).getId();
