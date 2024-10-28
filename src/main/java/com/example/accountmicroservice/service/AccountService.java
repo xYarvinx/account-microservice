@@ -225,4 +225,9 @@ public class AccountService {
 
         return doctor;
     }
+
+    public boolean userExistsWithRole(Long userId, String role) {
+        AccountEntity account = getAccount(userId);
+        return account.getRoles().contains(Role.valueOf(role));
+    }
 }

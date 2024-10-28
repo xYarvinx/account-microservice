@@ -1,5 +1,7 @@
 package com.example.accountmicroservice.config;
 
+import com.example.accountmicroservice.dto.RoleValidationRequest;
+import com.example.accountmicroservice.dto.RoleValidationResponse;
 import com.example.accountmicroservice.dto.TokenValidationRequest;
 import com.example.accountmicroservice.dto.TokenValidationResponse;
 import org.springframework.amqp.core.Binding;
@@ -30,6 +32,41 @@ public class RabbitMQConfiguration {
         return new TopicExchange("roleExchange");
     }
 
+    @Bean
+    public TopicExchange userExchange() {
+        return new TopicExchange("userExchange");
+    }
+
+    @Bean
+    public Queue userIdByTokenRequestQueue() {
+        return new Queue("userIdByTokenRequestQueue", true);
+    }
+
+    @Bean
+    public Queue userIdByTokenResponseQueue() {
+        return new Queue("userIdByTokenResponseQueue", true);
+    }
+
+    // Привязки для очередей
+    @Bean
+    public Binding bindingUserIdByTokenRequest(Queue userIdByTokenRequestQueue, TopicExchange userExchange) {
+        return BindingBuilder.bind(userIdByTokenRequestQueue).to(userExchange).with("user.id.by.token.request");
+    }
+
+    @Bean
+    public Binding bindingUserIdByTokenResponse(Queue userIdByTokenResponseQueue, TopicExchange userExchange) {
+        return BindingBuilder.bind(userIdByTokenResponseQueue).to(userExchange).with("user.id.by.token.response");
+    }
+
+    @Bean
+    public Queue userExistRequestQueue() {
+        return new Queue("userExistRequestQueue", true);
+    }
+
+    @Bean
+    public Queue userExistResponseQueue() {
+        return new Queue("userExistResponseQueue", true);
+    }
 
     @Bean
     public Queue authRequestQueue() {
@@ -50,6 +87,16 @@ public class RabbitMQConfiguration {
     @Bean
     public Queue roleResponseQueue() {
         return new Queue("roleResponseQueue", true);
+    }
+
+    @Bean
+    public Binding bindingUserExistRequest(Queue userExistRequestQueue, TopicExchange userExchange) {
+        return BindingBuilder.bind(userExistRequestQueue).to(userExchange).with("user.exist.request");
+    }
+
+    @Bean
+    public Binding bindingUserExistResponse(Queue userExistResponseQueue, TopicExchange userExchange) {
+        return BindingBuilder.bind(userExistResponseQueue).to(userExchange).with("user.exist.response");
     }
 
 
@@ -74,6 +121,7 @@ public class RabbitMQConfiguration {
     }
 
 
+
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {
         Jackson2JsonMessageConverter jsonConverter = new Jackson2JsonMessageConverter();
@@ -88,6 +136,8 @@ public class RabbitMQConfiguration {
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("TokenValidationRequest", TokenValidationRequest.class);
         idClassMapping.put("TokenValidationResponse", TokenValidationResponse.class);
+        idClassMapping.put("RoleValidationRequest", RoleValidationRequest.class);
+        idClassMapping.put("RoleValidationResponse", RoleValidationResponse.class);
         classMapper.setIdClassMapping(idClassMapping);
         return classMapper;
     }

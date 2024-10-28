@@ -1,5 +1,6 @@
 package com.example.accountmicroservice.config;
 
+import com.example.accountmicroservice.exception.InvalidTokenException;
 import com.example.accountmicroservice.model.AccountEntity;
 import com.example.accountmicroservice.model.Role;
 import io.jsonwebtoken.*;
@@ -118,5 +119,16 @@ public class TokenProvider {
             }
         }
         return roles;
+    }
+
+    public String getUsernameFromToken(String token) {
+        try {
+            Claims claims = getClaims(token);
+
+            return claims.getSubject();
+
+        } catch (Exception e) {
+            throw new InvalidTokenException("Недействительный токен");
+        }
     }
 }
